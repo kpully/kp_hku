@@ -6,6 +6,7 @@ from sklearn.cross_validation import cross_val_score, train_test_split
 import numpy as np
 import pandas as pd
 from patsy import dmatrices
+import os
 
 x=2
 df = pd.read_csv('mammographic_masses.data', names = ['BIRADS', 'Age', 'Shape', 'Margin', 'Density', 'Severity'])

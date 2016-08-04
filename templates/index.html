@@ -1,0 +1,183 @@
+{% extends "layout.html" %}
+{% block body %}
+
+<head>
+<link rel= "stylesheet" type= "text/css" href= "{{ url_for('static',filename='styles/style.css') }}">
+
+</head>
+
+<script src="http://d3js.org/d3.v3.min.js"></script>
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript" src="http://code.jquery.com/jquery-latest.min.js"></script>
+
+<h1>Probability of a Malignant Tumor</h1>
+<p>&nbsp;&nbsp;</p>
+<p>
+  <label for="nAge" 
+         style="display: inline-block; width: 300px; text-align: right">
+         Age = <span id="nAge-value">…</span>
+  </label>
+  <input type="range" min="5" max="100" id="nAge" class="sliders">
+</p>
+
+<p>
+  <label for="nShape" 
+         style="display: inline-block; width: 300px; text-align: right">
+         Shape = <span id="nShape-value">…</span>
+  </label>
+  <input type="range" min="1.0" max="4.0" id="nShape" class="sliders">
+</p>
+
+<p>
+  <label for="nMargin" 
+         style="display: inline-block; width: 300px; text-align: right">
+         Margin = <span id="nMargin-value">…</span>
+  </label>
+  <input type="range" min="1" max="5" id="nMargin" class="sliders">
+</p>
+
+<p>
+  <label for="nDensity" 
+         style="display: inline-block; width: 300px; text-align: right">
+         Density = <span id="nDensity-value">…</span>
+  </label>
+  <input type="range" min="1" max="4" id="nDensity" class="sliders">
+</p>
+<p>&nbsp;</p>
+<p><a href=# id="calculate" class="pdct">Predict</a>
+
+<script>
+var width = 100;
+var height = 100;
+
+ 
+var holder = d3.select("body")
+      .append("svg")
+      .attr("width", width)    
+      .attr("height", height); 
+
+// read a change in the Age input
+d3.select("#nAge").on("input", function() {
+  updateAge(+this.value);
+});
+
+// read a change in the Shape input
+d3.select("#nShape").on("input", function() {
+  updateShape(+this.value);
+});
+
+// read a change in the Margin input
+d3.select("#nMargin").on("input", function() {
+  updateMargin(+this.value);
+});
+
+// read a change in the Density input
+d3.select("#nDensity").on("input", function() {
+  updateDensity(+this.value);
+});
+
+// update the values
+updateAge(50);
+updateShape(2.0);
+updateMargin(2.0);
+updateDensity(2);
+
+// Update the age attributes
+function updateAge(nAge) {
+  // adjust the text on the range slider
+  d3.select("#nAge-value").text(nAge);
+  d3.select("#nAge").property("value", nAge);
+}
+
+// Update the shape attributes
+function updateShape(nShape) {
+  // adjust the text on the range slider
+  d3.select("#nShape-value").text(nShape);
+  d3.select("#nShape").property("value", nShape);
+}
+
+// Update the shape attributes
+function updateMargin(nMargin) {
+  // adjust the text on the range slider
+  d3.select("#nMargin-value").text(nMargin);
+  d3.select("#nMargin").property("value", nMargin);
+}
+
+// Update the shape attributes
+function updateDensity(nDensity) {
+  // adjust the text on the range slider
+  d3.select("#nDensity-value").text(nDensity);
+  d3.select("#nDensity").property("value", nDensity);
+}
+
+
+  $(function() {
+    var submit_form = function(e) {
+      $.getJSON($SCRIPT_ROOT + '/_predict', {
+        age: $(nAge).val(),
+        shape: $(nShape).val(),
+        margin: $(nMargin).val(),
+        density: $(nDensity).val()
+      }, function(data) {
+        $('#result').text(data.result);
+        $('input[name=a]').focus().select();
+        console.log(data.p_yes, data.p_no)
+
+        dataset = [data.p_yes, data.p_no]
+        labels=['benign', 'malignant']
+        colors=['forestgreen', 'darkred']
+        if (data.p_yes > data.p_no) {
+          weights = ['bold', 'normal']
+        } else weights = ['normal', 'bolder']
+
+        height=Math.max(data.p_yes, data.p_no)*200
+        width = Math.max(data.p_yes*10000)
+
+      var svg = d3.select("body").append("svg")
+      svg.attr("height", height).attr("width", width)
+
+      circles = svg.selectAll("circle")
+                 .data(dataset)
+                 .enter()
+                 .append("circle")
+
+     circles.attr("cx", function(d, i) {return (i*500)+100;})
+             .attr("cy",height/2)
+             .attr("r", function(d) {return d*100;})
+             .attr("fill", "darkgray")
+
+      var text = svg.selectAll("text")
+              .data(labels)
+              .enter()
+              .append("text")
+
+      var textLabels = text
+              .data(labels)
+              .attr("x",function(d, i) {return (i*500)+100;})
+              .attr("y", height/2)
+              .text( function(d) {return d})
+              .data(colors)
+              .attr("fill", function(d) {return d})
+              .attr("font-family", "sans-serif")
+              .data(weights)
+              .attr("font-weight", function(d) {return d})
+      });
+      return false;
+    };
+
+    $('a#calculate').bind('click', submit_form);
+
+    $('input[type=text]').bind('keydown', function(e) {
+      if (e.keyCode == 13) {
+        submit_form(e);
+      }
+    });
+  });
+
+</script>
+
+
+
+
+
+{% endblock %}

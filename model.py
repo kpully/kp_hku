@@ -19,7 +19,8 @@ df = df.drop('BIRADS', axis=1)
 df = df.dropna()
 
 features = ['Age', 'Shape', 'Margin', 'Density']
-y, X = dmatrices('Severity ~ C(Shape) + Age + C(Margin) + Density', data=df)
+X, y = df[features], df.Severity
+#y, X = dmatrices('Severity ~ C(Shape) + Age + C(Margin) + Density', data=df)
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=0)
 model = LogisticRegression(C=10).fit(X_train, y_train.ravel())
 
